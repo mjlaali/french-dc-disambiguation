@@ -7,16 +7,21 @@ see [Laali and Kesseim 2015](https://arxiv.org/abs/1704.05162) for more informat
 # Running the classifier
 
 To complie this classifier, you need
+
 1. [Java 1.8](http://www.oracle.com/technetwork/java/javase/overview/java8-2100321.html)
 1. [Apache Maven](https://maven.apache.org/)
 
 Please run the following commands to compile the source codes:
-1. git clone https://github.com/mjlaali/french-dc-disambiguation.git
-2. cd french-dc-disambiguation/
-3. mvn package dependency:copy-dependencies -DskipTests
+```bash
+git clone https://github.com/mjlaali/french-dc-disambiguation.git
+cd french-dc-disambiguation/
+mvn package dependency:copy-dependencies -DskipTests
+```
 
 To label french discourse connectives, please run the following comman:
+```bash
 ./run.sh -i INPUT_DIR -o OUTPUT_DIR
+```
 
 where INPUT_DIR is the input directory that contains only text files and the output directory is where the results are saved in the XML format.
 
