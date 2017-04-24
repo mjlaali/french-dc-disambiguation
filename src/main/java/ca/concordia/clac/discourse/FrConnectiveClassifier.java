@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.TreeSet;
 import java.util.function.Function;
 
@@ -19,8 +20,11 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
+import org.apache.uima.collection.CollectionReaderDescription;
 import org.apache.uima.fit.component.initialize.ConfigurationParameterInitializer;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
+import org.apache.uima.fit.factory.AggregateBuilder;
+import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.fit.factory.JCasFactory;
 import org.apache.uima.fit.pipeline.SimplePipeline;
 import org.apache.uima.jcas.JCas;
@@ -40,6 +44,7 @@ import ca.concordia.clac.ml.classifier.StringClassifierLabeller;
 import ca.concordia.clac.tools.XMLGenerator;
 import ca.concordia.clac.uima.engines.LookupInstanceExtractor;
 import de.tudarmstadt.ukp.dkpro.core.berkeleyparser.BerkeleyParser;
+import de.tudarmstadt.ukp.dkpro.core.io.text.TextReader;
 import de.tudarmstadt.ukp.dkpro.core.opennlp.OpenNlpSegmenter;
 
 public class FrConnectiveClassifier extends DiscourseVsNonDiscourseClassifier{
@@ -199,43 +204,73 @@ public class FrConnectiveClassifier extends DiscourseVsNonDiscourseClassifier{
 		@Option(
 				shortName = "i",
 				longName = "input", 
-				description = "input text",
+				description = "a directory that contains text files. If it is not provided, the classifier read text from the console",
 				defaultToNull = true)
-		public String getInputText();
+		public File getInputText();
+
+		@Option(
+				shortName = "o",
+				longName = "output", 
+				description = "the output directory to store the results. If the input direcotry is not presented will be ignored.",
+				defaultToNull = true)
+		public File getOutputDir();
 		
 	}
 	
 	public static void main(String[] args) throws Exception{
 		Options options = CliFactory.parseArguments(Options.class, args);
 		
-		System.out.println("Model = " + options.getModelDir());
+		if (options.getModelDir() == null)
+			System.out.println("The pre-trained model will be loaded");
+		else
+			System.out.println("Model = " + options.getModelDir());
 		
 		try{
 			File model = options.getModelDir();
-			String text = options.getInputText();
-			if (text == null){
-				text = "Si l'Assemblée en est d'accord, je ferai comme M. Evans l'a suggéré.";
+			File inputDir = options.getInputText();
+			JCas jcas = null;
+			CollectionReaderDescription reader = null;
+			if (inputDir == null){
+				Scanner scanner = new Scanner(System.in);
+				StringBuilder sb = new StringBuilder();
+				while (scanner.hasNext()){
+					sb.append(scanner.nextLine());
+					sb.append('\n');
+				}
+				scanner.close();
+				jcas = JCasFactory.createJCas();
+				jcas.setDocumentText(sb.toString());
+				jcas.setDocumentLanguage("fr");
+			} else {
+				reader = CollectionReaderFactory.createReaderDescription(TextReader.class,
+						TextReader.PARAM_SOURCE_LOCATION, inputDir,
+						TextReader.PARAM_LANGUAGE, "fr", 
+						TextReader.PARAM_PATTERNS, "*");
 			}
 			
-			JCas jcas = JCasFactory.createJCas();
-			jcas.setDocumentText(text);
+			AggregateBuilder pipline = new AggregateBuilder();
+			pipline.add(createEngineDescription(OpenNlpSegmenter.class,
+					OpenNlpSegmenter.PARAM_LANGUAGE, "fr", 
+					OpenNlpSegmenter.PARAM_SEGMENTATION_MODEL_LOCATION, "classpath:/fr-sent.bin", 
+					OpenNlpSegmenter.PARAM_TOKENIZATION_MODEL_LOCATION, "classpath:/fr-token.bin"
+					));
+			pipline.add(createEngineDescription(BerkeleyParser.class, 
+					BerkeleyParser.PARAM_LANGUAGE, "fr", 
+					BerkeleyParser.PARAM_MODEL_LOCATION, "classpath:/fra_sm5.gr", 
+					BerkeleyParser.PARAM_WRITE_POS, true, 
+					BerkeleyParser.PARAM_READ_POS, false));
 			
-			jcas.setDocumentLanguage("fr");
+			pipline.add(model == null ? getClassifierDescription() : getClassifierDescription(model.toURI().toURL()));
 			
-			SimplePipeline.runPipeline(jcas,
-					createEngineDescription(OpenNlpSegmenter.class,
-							OpenNlpSegmenter.PARAM_LANGUAGE, "fr", 
-							OpenNlpSegmenter.PARAM_SEGMENTATION_MODEL_LOCATION, "classpath:/fr-sent.bin", 
-							OpenNlpSegmenter.PARAM_TOKENIZATION_MODEL_LOCATION, "classpath:/fr-token.bin"
-							),
-					createEngineDescription(BerkeleyParser.class, 
-							BerkeleyParser.PARAM_LANGUAGE, "fr", 
-							BerkeleyParser.PARAM_MODEL_LOCATION, "classpath:/fra_sm5.gr", 
-							BerkeleyParser.PARAM_WRITE_POS, true, 
-							BerkeleyParser.PARAM_READ_POS, false),
-					
-					model == null ? getClassifierDescription() : getClassifierDescription(model.toURI().toURL()) , 
-					XMLGenerator.getDescription(null, "", true, "DiscourseConnective"));
+			File outputDir = options.getOutputDir() == null ? new File("out") : options.getOutputDir();
+			if (jcas != null)
+				outputDir = null;
+			pipline.add(XMLGenerator.getDescription(outputDir, "", true, "DiscourseConnective"));
+			
+			if (jcas != null)
+				SimplePipeline.runPipeline(jcas, pipline.createAggregateDescription());
+			else
+				SimplePipeline.runPipeline(reader, pipline.createAggregateDescription());
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}

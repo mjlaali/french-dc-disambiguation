@@ -281,7 +281,10 @@ public class XMLGenerator extends JCasAnnotator_ImplBase{
 		String docName;
 		try {
 			docName = Tools.getDocName(aJCas);
-			docName = docName.substring(docName.lastIndexOf('/') + 1, docName.lastIndexOf('.'));
+			int extensionStart = docName.lastIndexOf('.');
+			if (extensionStart == -1)
+				extensionStart = docName.length();
+			docName = docName.substring(docName.lastIndexOf('/') + 1, extensionStart);
 			return docName + postfix;
 		} catch (IllegalArgumentException e) {
 			fileIdx++;
