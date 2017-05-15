@@ -19,7 +19,7 @@ import de.tudarmstadt.ukp.dkpro.core.berkeleyparser.BerkeleyParser;
 import de.tudarmstadt.ukp.dkpro.core.opennlp.OpenNlpSegmenter;
 
 public class FDTBPipelineFactory {
-	public static final boolean useBerkeleyParser = false;
+	public static final boolean useBerkeleyParser = true;
 	public static final String INIT_STEP = "init";
 	public static final String GOLD_ANNOTATION_STEP = "gold";
 	public static final String PARSE_TEXTS = "parse";

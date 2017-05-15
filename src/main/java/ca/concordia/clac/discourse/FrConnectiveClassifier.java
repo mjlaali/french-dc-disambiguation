@@ -31,7 +31,7 @@ import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.cleartk.discourse.type.DiscourseConnective;
 import org.cleartk.ml.Feature;
-import org.cleartk.ml.opennlp.maxent.MaxentStringOutcomeDataWriter;
+import org.cleartk.ml.weka.WekaStringOutcomeDataWriter;
 import org.xml.sax.SAXException;
 
 import com.lexicalscope.jewel.cli.CliFactory;
@@ -142,14 +142,14 @@ public class FrConnectiveClassifier extends DiscourseVsNonDiscourseClassifier{
 	}
 	
 	public static AnalysisEngineDescription getWriterDescription(File outputFld, File lexconnFile) throws ResourceInitializationException, MalformedURLException{
-		return getWriterDescription(outputFld, lexconnFile);
+		return getWriterDescription(outputFld, lexconnFile.toURI().toURL());
 	}
 	
 	public static AnalysisEngineDescription getWriterDescription(File outputFld, URL lexconnFile) throws ResourceInitializationException, MalformedURLException{
 		File dcList = new File(outputFld, DC_LIST_FILE);
 		return StringClassifierLabeller.getWriterDescription(
 				FrConnectiveClassifier.class,
-				MaxentStringOutcomeDataWriter.class,
+				WekaStringOutcomeDataWriter.class,
 				outputFld, 
 				FrConnectiveClassifier.PARAM_GENERATE_DC_LIST, true,
 				FrConnectiveClassifier.PARAM_JUST_CANONICAL_FEATURE, false,
