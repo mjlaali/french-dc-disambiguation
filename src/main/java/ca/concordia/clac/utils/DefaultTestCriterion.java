@@ -39,6 +39,11 @@ public class DefaultTestCriterion implements TestCriterion{
 		return id;
 	}
 
+	/**
+	 * Add a weka filter on the dataset.
+	 * @param filterConfig
+	 * @throws Exception
+	 */
 	public void addFilter(String filterConfig) throws Exception{
 		this.filterConfigs.add(filterConfig);
 		this.filters.add(DefaultExperiment.buildWekaComponent(filterConfig, Filter.class));

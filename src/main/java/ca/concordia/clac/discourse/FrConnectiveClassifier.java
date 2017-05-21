@@ -41,8 +41,8 @@ import ca.concordia.clac.discourse.parser.dc.disambiguation.DiscourseAnnotationF
 import ca.concordia.clac.discourse.parser.dc.disambiguation.DiscourseVsNonDiscourseClassifier;
 import ca.concordia.clac.lexconn.DefaultLexconnReader;
 import ca.concordia.clac.ml.classifier.StringClassifierLabeller;
-import ca.concordia.clac.tools.XMLGenerator;
 import ca.concordia.clac.uima.engines.LookupInstanceExtractor;
+import ca.concordia.clac.uima.engines.XMLGenerator;
 import de.tudarmstadt.ukp.dkpro.core.berkeleyparser.BerkeleyParser;
 import de.tudarmstadt.ukp.dkpro.core.io.text.TextReader;
 import de.tudarmstadt.ukp.dkpro.core.opennlp.OpenNlpSegmenter;

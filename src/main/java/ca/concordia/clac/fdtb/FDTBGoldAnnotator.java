@@ -23,12 +23,12 @@ import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.cleartk.corpus.conll2015.TokenListTools;
-import org.cleartk.corpus.conll2015.Tools;
 import org.cleartk.discourse.type.DiscourseConnective;
 import org.xml.sax.SAXException;
 
 import ca.concordia.clac.batch_process.BatchProcess;
 import ca.concordia.clac.discourse.FDTBPipelineFactory;
+import ca.concordia.clac.uima.engines.Tools;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
 
 public class FDTBGoldAnnotator extends JCasAnnotator_ImplBase{
